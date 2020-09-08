@@ -3,7 +3,7 @@
     <!-- 头部操作栏 -->
     <view wx:if="{{!calendarConfig.hideHeadOnWeekMode}}" class="handle {{calendarConfig.theme}}_handle-color fs28 b lr ac pc">
       <view class="prev fs36" wx:if="{{calendarConfig.showHandlerOnWeekMode || !calendarConfig.weekMode}}">
-        <text class="prev-handle iconfont icon-doubleleft" bindtap="chooseDate" data-type="prev_year"></text>
+        <text wx:if="{{!!!calendar.emptyPreMonth}}" class="prev-handle iconfont icon-doubleleft" bindtap="chooseDate" data-type="prev_year"></text>
         <text class="prev-handle iconfont icon-left" bindtap="chooseDate" data-type="prev_month"></text>
       </view>
       <view class="flex date-in-handle b lr cc" bindtap="doubleClickToToday">{{calendar.curYear || "--"}} 年 {{calendar.curMonth || "--"}} 月</view>
@@ -29,7 +29,7 @@
           wx:key="index"
           data-idx="{{index}}">
             <view class="date-wrap b cc">
-              <view class="date">
+              <view class="date {{item.disable ? calendarConfig.theme + '_date-disable' : ''}}" >
                 {{item.day}}
                 <view
                   wx:if="{{calendarConfig.showLunar && item.lunar}}"
@@ -72,7 +72,7 @@
           wx:key="index"
           data-idx="{{index}}">
           <view class="date-wrap b cc">
-            <view class="date">
+            <view class="date {{item.disable ? calendarConfig.theme + '_date-disable' : ''}}">
               {{item.day}}
               <view
                 wx:if="{{calendarConfig.showLunar && item.lunar}}"

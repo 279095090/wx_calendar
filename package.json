@@ -4,8 +4,8 @@
   "description": "one small calendar demo",
   "main": "app.js",
   "scripts": {
-    "dev": "rm -rf dist && gulp watch",
-    "build": "rm -rf component-calendar && webpack && gulp && gulp clean",
+    "dev": "rm -r dist && gulp watch",
+    "build": "webpack && gulp && gulp clean",
     "build:example": "rm -rf example && gulp example",
     "test": "jest",
     "docs:dev": "vuepress dev docs",
@@ -62,6 +62,7 @@
     "lint-staged": "^7.3.0",
     "miniprogram-automator": "^0.9.1",
     "prettier": "^1.14.3",
+    "rm": "^0.1.8",
     "stylelint": "^8.4.0",
     "stylelint-config-prettier": "^4.0.0",
     "stylelint-config-standard": "^18.0.0",

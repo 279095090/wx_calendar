@@ -116,21 +116,47 @@ class Calendar extends WxData {
     if (firstDayOfWeek > 0) {
       const len = prevMonthDays - firstDayOfWeek
       const { onlyShowCurrentMonth } = config
-      const { showLunar } = this.getCalendarConfig()
+      const { showLunar, disableDays = [] } = this.getCalendarConfig()
+      const disableDaysStr = disableDays.map(d => getDate.toTimeStr(d))
       for (let i = prevMonthDays; i > len; i--) {
         if (onlyShowCurrentMonth) {
           empytGrids.push('')
         } else {
-          empytGrids.push({
-            day: i,
-            lunar: showLunar
-              ? convertSolarLunar.solar2lunar(year, month - 1, i)
-              : null
-          })
+          var item = getDate.prevMonth({ year, month })
+          item.day = i
+          item.lunar = showLunar
+            ? convertSolarLunar.solar2lunar(year, month - 1, i)
+            : null
+          const cur = getDate.toTimeStr(item)
+          if (disableDaysStr.includes(cur)) item.disable = true
+
+          const {
+            disableDateTimestamp,
+            disableType
+          } = this.__getDisableDateTimestamp()
+          let disabelByConfig = false
+          const timestamp = getDateTimeStamp(item)
+          if (disableDateTimestamp) {
+            if (
+              (disableType === 'before' && timestamp < disableDateTimestamp) ||
+              (disableType === 'after' && timestamp > disableDateTimestamp)
+            ) {
+              disabelByConfig = true
+            }
+          }
+          const isDisable = disabelByConfig || this.__isDisable(timestamp)
+          if (isDisable) {
+            item.disable = true
+            item.choosed = false
+          }
+          empytGrids.push(item)
         }
       }
+
       this.setData({
-        'calendar.empytGrids': empytGrids.reverse()
+        'calendar.empytGrids': empytGrids.reverse(),
+        'calendar.emptyPreMonth':
+          empytGrids.filter(x => x.disable).length === empytGrids.length
       })
     } else {
       this.setData({
@@ -178,6 +204,7 @@ class Calendar extends WxData {
     let lastEmptyGrids = []
     const thisMonthDays = getDate.thisMonthDays(year, month)
     let lastDayWeek = getDate.dayOfWeek(year, month, thisMonthDays)
+
     const config = this.getCalendarConfig() || {}
     if (config.firstDayOfWeek === 'Mon') {
       if (lastDayWeek === 0) {
@@ -187,20 +214,46 @@ class Calendar extends WxData {
       }
     }
     let len = 7 - (lastDayWeek + 1)
-    const { onlyShowCurrentMonth, showLunar } = config
+    const { onlyShowCurrentMonth, showLunar, disableDays = [] } = config
     if (!onlyShowCurrentMonth) {
       len = len + this.calculateExtraEmptyDate(year, month, config)
     }
+    const disableDaysStr = disableDays.map(d => getDate.toTimeStr(d))
     for (let i = 1; i <= len; i++) {
       if (onlyShowCurrentMonth) {
         lastEmptyGrids.push('')
       } else {
-        lastEmptyGrids.push({
-          day: i,
-          lunar: showLunar
-            ? convertSolarLunar.solar2lunar(year, month + 1, i)
-            : null
-        })
+        var item = getDate.nextMonth({ year, month })
+
+        item.day = i
+        item.lunar = showLunar
+          ? convertSolarLunar.solar2lunar(year, month + 1, i)
+          : null
+
+        const cur = getDate.toTimeStr(item)
+        if (disableDaysStr.includes(cur)) item.disable = true
+
+        const {
+          disableDateTimestamp,
+          disableType
+        } = this.__getDisableDateTimestamp()
+        let disabelByConfig = false
+        const timestamp = getDateTimeStamp(item)
+        if (disableDateTimestamp) {
+          if (
+            (disableType === 'before' && timestamp < disableDateTimestamp) ||
+            (disableType === 'after' && timestamp > disableDateTimestamp)
+          ) {
+            disabelByConfig = true
+          }
+        }
+        const isDisable = disabelByConfig || this.__isDisable(timestamp)
+        if (isDisable) {
+          item.disable = true
+          item.choosed = false
+        }
+
+        lastEmptyGrids.push(item)
       }
     }
     this.setData({
@@ -288,6 +341,7 @@ class Calendar extends WxData {
       }
       const selectedDayStr = selectedDay.map(d => getDate.toTimeStr(d))
       const disableDaysStr = disableDays.map(d => getDate.toTimeStr(d))
+
       const [areaStart, areaEnd] = chooseAreaTimestamp
       days.forEach(item => {
         const cur = getDate.toTimeStr(item)
